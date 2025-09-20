@@ -1,11 +1,11 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import date
 from pydantic import BaseModel, ConfigDict
 
 # ---------------- Book ----------------
 class BookBase(BaseModel):
     title: str
-    publication_date: datetime
+    publication_date: date
     author_id: int
 
 class BookCreate(BookBase):
