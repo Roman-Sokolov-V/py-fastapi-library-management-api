@@ -29,7 +29,7 @@ class AuthorBase(BaseModel):
 class AuthorCreate(AuthorBase):
     pass
 
-class AuthorList(AuthorBase):
+class AuthorRead(AuthorBase):
     id: int
     books: list[BookTitle]  # список книг без рекурсії
     model_config = ConfigDict(from_attributes=True)
