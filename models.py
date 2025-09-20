@@ -24,5 +24,9 @@ class DbBook(Base):
     title: Mapped[str] = mapped_column(String(50), nullable=False)
     summary: Mapped[str] = mapped_column(String(1000), nullable=False)
     publication_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("authors.id"))
+    author_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("authors.id", ondelete="CASCADE"),
+        nullable=False
+    )
     author: Mapped["DbAuthor"] = relationship(back_populates="books")
