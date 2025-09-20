@@ -1,3 +1,5 @@
+from typing import Generator
+
 from fastapi import FastAPI, Depends, status, Query, Path, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
@@ -20,7 +22,7 @@ def on_startup():
     Base.metadata.create_all(bind=engine)
 
 
-def get_db() -> Session:  # type: ignore
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
@@ -76,13 +78,7 @@ def list_books(
 
 @app.post("/books", response_model=BookRead)
 def create_book(book: BookCreate, db: Session = Depends(get_db)):
-    author = get_author_by_id(db=db, author_id=book.author_id)
-    if author is None:
-        return add_book_to_db(book=book, db=db)
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Author not found"
-    )
+    return add_book_to_db(book=book, db=db)
 
 @app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_book(book_id: int, db: Session = Depends(get_db)):

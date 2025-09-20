@@ -74,6 +74,12 @@ def get_all_books(
 
 
 def add_book_to_db(db: Session, book: BookCreate) -> DbBook:
+    author = get_author_by_id(db=db, author_id=book.author_id)
+    if author is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Author not found"
+        )
     db_book = DbBook(**book.model_dump())
     db.add(db_book)
     db.commit()
