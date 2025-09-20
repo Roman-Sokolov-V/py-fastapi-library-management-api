@@ -5,15 +5,15 @@ from sqlalchemy import select, Select
 from fastapi.exceptions import HTTPException
 from fastapi import status
 
-from models import DbAuthor, DbBook, Base
+from models import DbAuthor, DbBook
 from schemas import AuthorCreate, BookCreate
 
 
 def get_basic_selection(model: Type[DeclarativeBase]) -> Select:
     return select(model)
 
-def filter_by_id(selection: Select, author_id: int) -> Select:
-    return selection.filter_by(author_id=author_id)
+def filter_by_author_id(selection: Select, author_id: int) -> Select:
+    return selection.where(DbBook.author_id==author_id)
 
 def paginate(selection: Select, skip: int, limit: int) -> Select:
     return selection.offset(skip).limit(limit)
@@ -44,28 +44,26 @@ def add_author_to_db(db: Session, author: AuthorCreate) -> DbAuthor:
     db.refresh(db_author)
     return db_author
 
-def delete_author(db: Session, author_id: int) -> None | HTTPException:
+def delete_author(db: Session, author_id: int) -> None:
     db_author = db.query(DbAuthor).filter(DbAuthor.id == author_id).first()
-    if db_author:
-        db.delete(db_author)
-        db.commit()
-        return None
-
-    return HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Author not found"
-    )
+    if not db_author:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Author not found"
+        )
+    db.delete(db_author)
+    db.commit()
 
 
 def get_all_books(
         db: Session,
         skip: int,
         limit: int,
-        author_id: int
-) -> Sequence[DbAuthor]:
+        author_id: int | None
+) -> Sequence[DbBook]:
     selection = get_basic_selection(DbBook)
-    if author_id:
-        selection = filter_by_id(selection, author_id)
+    if author_id is not None:
+        selection = filter_by_author_id(selection, author_id)
     return db.execute(
         paginate(
             selection=selection,
@@ -83,14 +81,12 @@ def add_book_to_db(db: Session, book: BookCreate) -> DbBook:
     return db_book
 
 
-def delete_book(db: Session, book_id: int) -> None | HTTPException:
+def delete_book(db: Session, book_id: int) -> None:
     db_book = db.query(DbBook).filter(DbBook.id == book_id).first()
-    if db_book:
-        db.delete(db_book)
-        db.commit()
-        return None
-
-    return HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Book not found"
-    )
+    if db_book is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Book not found"
+        )
+    db.delete(db_book)
+    db.commit()
