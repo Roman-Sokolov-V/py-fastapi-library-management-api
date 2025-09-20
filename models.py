@@ -2,11 +2,9 @@ from datetime import date
 
 from sqlalchemy import Integer, String, ForeignKey, Date
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from base import Base
 
-
-class Base(DeclarativeBase):
-    pass
 
 class DbAuthor(Base):
     __tablename__ = "authors"
